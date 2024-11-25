@@ -11,7 +11,7 @@ import { BoardCell, BoardGroup } from '../../app.models';
       [value]="cell.value"
       [state]="cell.state"
       [prefilled]="cell.prefilled"
-      (click)="selected.emit(cell)"
+      (click)="select.emit(cell)"
     />
     }
   `,
@@ -29,5 +29,5 @@ import { BoardCell, BoardGroup } from '../../app.models';
 })
 export class CellGroupComponent {
   group = input.required<BoardGroup>();
-  selected = output<BoardCell>();
+  select = output<BoardCell>();
 }

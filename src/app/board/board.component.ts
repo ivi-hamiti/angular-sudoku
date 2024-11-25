@@ -9,10 +9,10 @@ export type BoardSelectedEvent = { cell: BoardCell; group: BoardGroup };
   imports: [CellGroupComponent],
   template: `
     @for (group of groups(); track y; let y = $index) {
-      <app-cell-group
-        [group]="group"
-        (selected)="select.emit({ cell: $event, group })"
-      />
+    <app-cell-group
+      [group]="group"
+      (select)="select.emit({ cell: $event, group })"
+    />
     }
   `,
   styles: `

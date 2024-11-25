@@ -43,6 +43,7 @@ export type SolveResult = {
 };
 
 const deserialize = (difficulty: BoardDifficulty, raw: number[][]): Board => {
+  console.log(difficulty, raw);
   const board: Board = {
     groups: [],
     difficulty,
@@ -58,14 +59,9 @@ const deserialize = (difficulty: BoardDifficulty, raw: number[][]): Board => {
       const value = raw[y][x];
 
       if (value === 0) {
-        group.cells.push({
-          x,
-          y,
-          prefilled: false,
-          value: undefined,
-        });
+        group.cells.push({ x, y, value: undefined });
       } else {
-        group.cells.push({ x, y, prefilled: true, value });
+        group.cells.push({ x, y, value, prefilled: true });
       }
     });
 
@@ -101,8 +97,8 @@ export class BoardService {
       const group: BoardGroup = { ...groupCoordinate, cells: [] };
 
       square3x3.forEach((cellCoordinate) => {
-        const x = groupCoordinate.y * 3 + cellCoordinate.y;
-        const y = groupCoordinate.x * 3 + cellCoordinate.x;
+        const y = groupCoordinate.y * 3 + cellCoordinate.y;
+        const x = groupCoordinate.x * 3 + cellCoordinate.x;
 
         group.cells.push({ x, y, value: undefined });
       });
