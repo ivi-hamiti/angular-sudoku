@@ -95,7 +95,7 @@ export class AppComponent implements OnInit {
     this.document.addEventListener('keypress', this.updateCellFromKeyboard);
 
     const breakpointSubscription = this.breakpointObserver
-      .observe('(min-width: 960px)')
+      .observe('(min-width: 860px)')
       .subscribe((state) => {
         if (state.matches) {
           this.layout.set('horizontal');

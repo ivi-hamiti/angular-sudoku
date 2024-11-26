@@ -9,8 +9,8 @@ import { By } from '@angular/platform-browser';
 describe('MenuComponent', () => {
   let fixture: ComponentFixture<MenuComponent>;
 
-  let menuServiceSubject = new Subject<BoardDifficulty>();
-  let menuService = {
+  const menuServiceSubject = new Subject<BoardDifficulty>();
+  const menuService = {
     resolveDifficulty: (difficulty: BoardDifficulty) => {
       menuServiceSubject.next(difficulty);
       menuServiceSubject.complete;

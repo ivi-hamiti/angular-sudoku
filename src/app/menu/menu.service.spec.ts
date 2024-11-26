@@ -6,12 +6,16 @@ import { MenuService } from './menu.service';
 
 describe('MenuService', () => {
   let service: MenuService;
-
-  let dialog = {
-    open: jasmine.createSpy('open'),
-  };
+  let dialog: Mock<MatDialog>;
 
   beforeEach(() => {
+    dialog = {
+      open: jasmine.createSpy('open'),
+      ngOnDestroy: jasmine.createSpy('ngOnDestroy'),
+      closeAll: jasmine.createSpy('closeAll'),
+      getDialogById: jasmine.createSpy('getDialogById'),
+    };
+
     TestBed.configureTestingModule({
       providers: [{ provide: MatDialog, useValue: dialog }],
     });

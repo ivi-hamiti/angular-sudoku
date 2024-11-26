@@ -1,10 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CellGroupComponent } from './cell-group.component';
-import { Component } from '@angular/core';
-import { CellComponent } from '../cell/cell.component';
+import { Component, input } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { BoardCellGroup } from '../../app.models';
+import { BoardCellGroup, BoardCellState, Cell } from '../../app.models';
+import { CellComponent } from '../cell/cell.component';
+import { CellGroupComponent } from './cell-group.component';
+
+@Component({
+  selector: 'app-cell',
+  template: ``,
+})
+class MockCellComponent {
+  value = input<Cell>();
+  state = input<BoardCellState>();
+  prefilled = input<boolean>();
+}
 
 describe('CellGroupComponent', () => {
   let fixture: ComponentFixture<CellGroupComponent>;
@@ -17,10 +27,8 @@ describe('CellGroupComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CellGroupComponent, CellComponent],
-    })
-      .overrideComponent(CellComponent, { set: { template: '' } })
-      .compileComponents();
+      imports: [CellGroupComponent, MockCellComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CellGroupComponent);
 

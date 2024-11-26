@@ -1,9 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BoardComponent } from './board.component';
-import { Board, BoardCellGroup, Cell } from '../app.models';
-import { CellGroupComponent } from './cell-group/cell-group.component';
+import { Component, input, output } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { BoardCellGroup } from '../app.models';
+import { BoardComponent } from './board.component';
+import {
+  CellGroupComponent,
+  CellGroupSelectEvent,
+} from './cell-group/cell-group.component';
+
+@Component({
+  selector: 'app-cell-group',
+  template: ``,
+})
+class MockCellGroupComponent {
+  group = input.required<BoardCellGroup>();
+  select = output<CellGroupSelectEvent>();
+}
 
 describe('BoardComponent', () => {
   let fixture: ComponentFixture<BoardComponent>;
@@ -19,10 +32,8 @@ describe('BoardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BoardComponent, CellGroupComponent],
-    })
-      .overrideComponent(CellGroupComponent, { set: { template: '' } })
-      .compileComponents();
+      imports: [BoardComponent, MockCellGroupComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(BoardComponent);
 

@@ -7,12 +7,23 @@ import { By } from '@angular/platform-browser';
 
 describe('ChooseDifficultyDialogComponent', () => {
   let fixture: ComponentFixture<ChooseDifficultyDialogComponent>;
-
-  const dialogRef = {
-    close: jasmine.createSpy('close'),
-  };
+  let dialogRef: Mock<MatDialogRef<BoardDifficulty>>;
 
   beforeEach(async () => {
+    dialogRef = {
+      close: jasmine.createSpy('close'),
+      afterOpened: jasmine.createSpy('afterOpened'),
+      afterClosed: jasmine.createSpy('afterClosed'),
+      beforeClosed: jasmine.createSpy('beforeClosed'),
+      backdropClick: jasmine.createSpy('backdropClick'),
+      keydownEvents: jasmine.createSpy('keydownEvents'),
+      updateSize: jasmine.createSpy('updateSize'),
+      updatePosition: jasmine.createSpy('updatePosition'),
+      addPanelClass: jasmine.createSpy('addPanelClass'),
+      removePanelClass: jasmine.createSpy('removePanelClass'),
+      getState: jasmine.createSpy('getState'),
+    };
+
     await TestBed.configureTestingModule({
       imports: [ChooseDifficultyDialogComponent],
       providers: [
