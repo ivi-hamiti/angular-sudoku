@@ -4,24 +4,13 @@ import { map, Observable } from 'rxjs';
 import {
   Board,
   BoardDifficulty,
-  BoardGroup,
+  BoardCellGroup,
   BoardState,
-  Coordinate,
+  square3x3,
+  fromSquare3x3,
 } from '../app.models';
 
 const endpoint = 'https://sugoku.onrender.com';
-
-const square3x3: ReadonlyArray<Readonly<Coordinate>> = [
-  { x: 0, y: 0 },
-  { x: 1, y: 0 },
-  { x: 2, y: 0 },
-  { x: 0, y: 1 },
-  { x: 1, y: 1 },
-  { x: 2, y: 1 },
-  { x: 0, y: 2 },
-  { x: 1, y: 2 },
-  { x: 2, y: 2 },
-];
 
 type GenerateResponse = {
   board: number[][];
@@ -43,25 +32,28 @@ export type SolveResult = {
 };
 
 const deserialize = (difficulty: BoardDifficulty, raw: number[][]): Board => {
-  console.log(difficulty, raw);
   const board: Board = {
     groups: [],
     difficulty,
   };
 
-  square3x3.forEach((groupCoordinate) => {
-    const group: BoardGroup = { ...groupCoordinate, cells: [] };
+  square3x3.forEach((_, groupIndex) => {
+    const group: BoardCellGroup = [];
 
-    square3x3.forEach((cellCoordinate) => {
-      const y = groupCoordinate.y * 3 + cellCoordinate.y;
-      const x = groupCoordinate.x * 3 + cellCoordinate.x;
+    const [groupRow, groupColumn] = fromSquare3x3(groupIndex);
 
-      const value = raw[y][x];
+    square3x3.forEach((_, cellIndex) => {
+      const [cellRow, cellColumn] = fromSquare3x3(cellIndex);
+
+      const row = groupRow * 3 + cellRow;
+      const column = groupColumn * 3 + cellColumn;
+
+      const value = raw[row][column];
 
       if (value === 0) {
-        group.cells.push({ x, y, value: undefined });
+        group.push({ value: undefined });
       } else {
-        group.cells.push({ x, y, value, prefilled: true });
+        group.push({ value, prefilled: true });
       }
     });
 
@@ -71,13 +63,20 @@ const deserialize = (difficulty: BoardDifficulty, raw: number[][]): Board => {
   return board;
 };
 
-const serialize = (groups: BoardGroup[]): number[][] => {
+const serialize = (groups: BoardCellGroup[]): number[][] => {
   const rows: number[][] = [];
 
-  groups.forEach((group) => {
-    group.cells.forEach((cell) => {
-      rows[cell.y] = rows[cell.y] || [];
-      rows[cell.y][cell.x] = cell.value || 0;
+  groups.forEach((group, groupIndex) => {
+    const [groupRow, groupColumn] = fromSquare3x3(groupIndex);
+
+    group.forEach((cell, cellIndex) => {
+      const [cellRow, cellColumn] = fromSquare3x3(cellIndex);
+
+      const row = groupRow * 3 + cellRow;
+      const column = groupColumn * 3 + cellColumn;
+
+      rows[row] ??= [];
+      rows[row][column] = cell.value || 0;
     });
   });
 
@@ -90,31 +89,25 @@ const serialize = (groups: BoardGroup[]): number[][] => {
 export class BoardService {
   private readonly http = inject(HttpClient);
 
-  empty = (): Board => {
-    const groups: BoardGroup[] = [];
-
-    square3x3.forEach((groupCoordinate) => {
-      const group: BoardGroup = { ...groupCoordinate, cells: [] };
-
-      square3x3.forEach((cellCoordinate) => {
-        const y = groupCoordinate.y * 3 + cellCoordinate.y;
-        const x = groupCoordinate.x * 3 + cellCoordinate.x;
-
-        group.cells.push({ x, y, value: undefined });
-      });
-
-      groups.push(group);
-    });
-
-    return { groups, difficulty: 'random' };
-  };
+  empty = (): Board =>
+    deserialize('random', [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]);
 
   generate = (difficulty: BoardDifficulty): Observable<Board> =>
     this.http
       .get<GenerateResponse>(`${endpoint}/board`, { params: { difficulty } })
       .pipe(map((response) => deserialize(difficulty, response.board)));
 
-  solve = (groups: BoardGroup[]): Observable<SolveResult> =>
+  solve = (groups: BoardCellGroup[]): Observable<SolveResult> =>
     this.http
       .post<SolveResponse>(`${endpoint}/solve`, {
         board: serialize(groups),
@@ -126,7 +119,7 @@ export class BoardService {
         }))
       );
 
-  validate = (groups: BoardGroup[]): Observable<BoardState> =>
+  validate = (groups: BoardCellGroup[]): Observable<BoardState> =>
     this.http
       .post<ValidateResponse>(`${endpoint}/validate`, {
         board: serialize(groups),

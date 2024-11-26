@@ -6,29 +6,24 @@ export type BoardDifficulty = 'easy' | 'medium' | 'hard' | 'random';
 
 export type BoardState = 'solved' | 'broken' | 'unsolvable';
 
-export type BoardCell = Coordinate & {
+export type BoardCell = {
   value: Cell;
   prefilled?: boolean;
   state?: BoardCellState;
 };
 
 export type Board = {
-  groups: BoardGroup[];
+  groups: BoardCellGroup[];
   difficulty: BoardDifficulty;
 };
 
-export type BoardGroup = Coordinate & { cells: BoardCell[] };
+export type BoardCellGroup = BoardCell[];
 
-export type Coordinate = { x: number; y: number };
+export const square3x3: ReadonlyArray<undefined> = Array.from({ length: 9 });
 
-export const same = (first: Coordinate, second: Coordinate): boolean => {
-  return first.x === second.x && first.y === second.y;
-};
+export const fromSquare3x3 = (index: number): [number, number] => {
+  const row = Math.floor(index / 3);
+  const column = index % 3;
 
-export const sameRow = (first: Coordinate, second: Coordinate): boolean => {
-  return first.y === second.y;
-};
-
-export const sameColumn = (first: Coordinate, second: Coordinate): boolean => {
-  return first.x === second.x;
+  return [row, column];
 };

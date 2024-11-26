@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
@@ -34,24 +34,25 @@ type AppTheme = 'light' | 'dark';
 export class HeaderComponent {
   private readonly document = inject(DOCUMENT);
 
-  theme: AppTheme = 'light';
+  theme = signal<AppTheme>('light');
 
-  ngOnInit(): void {
-    this.setTheme(this.theme);
-  }
-
-  setTheme(theme: AppTheme): void {
-    this.theme = theme;
-    this.document.documentElement.classList.remove('theme-light', 'theme-dark');
-    this.document.documentElement.classList.add(`theme-${theme}`);
+  constructor() {
+    effect(() => {
+      this.document.documentElement.classList.remove(
+        'theme-light',
+        'theme-dark'
+      );
+      this.document.documentElement.classList.add(`theme-${this.theme()}`);
+    });
   }
 
   switchTheme(): void {
-    switch (this.theme) {
-      case 'light':
-        return this.setTheme('dark');
-      case 'dark':
-        return this.setTheme('light');
-    }
+    this.theme.update((active) => {
+      if (active !== 'light') {
+        return 'light';
+      } else {
+        return 'dark';
+      }
+    });
   }
 }

@@ -2,13 +2,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { DOCUMENT } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  BoardDifficulty,
-  BoardGroup,
-  same,
-  sameColumn,
-  sameRow,
-} from './app.models';
+import { BoardCellGroup, BoardDifficulty, fromSquare3x3 } from './app.models';
 import { BoardComponent, BoardSelectedEvent } from './board/board.component';
 import { BoardService } from './board/board.service';
 import { KeypadComponent } from './keypad/keypad.component';
@@ -95,7 +89,7 @@ export class AppComponent implements OnInit {
   layout = signal<Layout>('horizontal');
 
   difficulty = signal<BoardDifficulty>('random');
-  groups = signal<BoardGroup[]>([]);
+  groups = signal<BoardCellGroup[]>([]);
 
   constructor() {
     this.document.addEventListener('keypress', this.updateCellFromKeyboard);
@@ -173,8 +167,7 @@ export class AppComponent implements OnInit {
 
     if (selected && value >= 1 && value <= 9) {
       this.groups.update((groups) => {
-        const selectedCell =
-          groups[selected.groupIndex].cells[selected.cellIndex];
+        const selectedCell = groups[selected.groupIndex][selected.cellIndex];
 
         if (!selectedCell.prefilled) {
           selectedCell.value = value;
@@ -185,38 +178,51 @@ export class AppComponent implements OnInit {
     }
   };
 
-  highlightBoard = ({
-    cell: selectedCell,
-    group: selectedGroup,
-  }: BoardSelectedEvent): void => {
+  highlightBoard = (selection: BoardSelectedEvent): void => {
     const groups = this.groups();
 
-    if (selectedCell.state === 'selected') {
+    if (selection.cell.state === 'selected') {
       this.selected.set(undefined);
 
       groups.forEach((group) => {
-        group.cells.forEach((cell) => {
+        group.forEach((cell) => {
           cell.state = undefined;
         });
       });
-
-      for (const group of groups) {
-        for (const cell of group.cells) {
-          cell.state = undefined;
-        }
-      }
     } else {
+      this.selected.set({
+        cellIndex: selection.cellIndex,
+        groupIndex: selection.groupIndex,
+      });
+
+      const [selectedGroupRow, selectedGroupColumn] = fromSquare3x3(
+        selection.groupIndex
+      );
+      const [selectedCellRow, selectedCellColumn] = fromSquare3x3(
+        selection.cellIndex
+      );
+
       groups.forEach((group, groupIndex) => {
-        group.cells.forEach((cell, cellIndex) => {
-          if (same(cell, selectedCell)) {
+        const [groupRow, groupColumn] = fromSquare3x3(groupIndex);
+
+        group.forEach((cell, cellIndex) => {
+          const [cellRow, cellColumn] = fromSquare3x3(cellIndex);
+
+          if (
+            selection.groupIndex === groupIndex &&
+            selection.cellIndex === cellIndex
+          ) {
             cell.state = 'selected';
-            this.selected.set({ cellIndex, groupIndex });
-          } else if (cell.value === selectedCell.value && selectedCell.value) {
+          } else if (
+            selection.cell.value &&
+            selection.cell.value === cell.value
+          ) {
             cell.state = 'highlighted';
           } else if (
-            same(group, selectedGroup) ||
-            sameRow(cell, selectedCell) ||
-            sameColumn(cell, selectedCell)
+            selection.groupIndex === groupIndex ||
+            (selectedGroupRow === groupRow && selectedCellRow === cellRow) ||
+            (selectedGroupColumn === groupColumn &&
+              selectedCellColumn === cellColumn)
           ) {
             cell.state = 'marked';
           } else {

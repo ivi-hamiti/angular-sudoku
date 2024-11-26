@@ -1,18 +1,23 @@
 import { Component, input, output } from '@angular/core';
 import { CellComponent } from '../cell/cell.component';
-import { BoardCell, BoardGroup } from '../../app.models';
+import { BoardCell, BoardCellGroup } from '../../app.models';
+
+export type CellGroupSelectEvent = {
+  cell: BoardCell;
+  cellIndex: number;
+};
 
 @Component({
   selector: 'app-cell-group',
   imports: [CellComponent],
   template: `
-    @for (cell of group().cells; track index; let index = $index) {
-    <app-cell
-      [value]="cell.value"
-      [state]="cell.state"
-      [prefilled]="cell.prefilled"
-      (click)="select.emit(cell)"
-    />
+    @for (cell of group(); track $index) {
+      <app-cell
+        [value]="cell.value"
+        [state]="cell.state"
+        [prefilled]="cell.prefilled"
+        (click)="select.emit({ cell, cellIndex: $index })"
+      />
     }
   `,
   styles: `
@@ -28,6 +33,6 @@ import { BoardCell, BoardGroup } from '../../app.models';
   `,
 })
 export class CellGroupComponent {
-  group = input.required<BoardGroup>();
-  select = output<BoardCell>();
+  group = input.required<BoardCellGroup>();
+  select = output<CellGroupSelectEvent>();
 }
